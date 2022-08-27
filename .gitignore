@@ -1,0 +1,6 @@
+data/*/*
+__pycache__/*/*
+.DS_Store
+__pycache__/diffusers.cpython-38.pyc
+modules/__pycache__/*
+src/__pycache__/*
