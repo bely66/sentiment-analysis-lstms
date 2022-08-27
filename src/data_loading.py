@@ -12,7 +12,7 @@ def get_tokenizer():
     tokenizer = torchtext.data.utils.get_tokenizer('basic_english')
     return tokenizer
 
-def process_data(train_data, test_data, tokenizer):
+def process_data(train_data, test_data, tokenizer, vocab_file=None):
     max_length = 256
 
     train_data = train_data.map(tokenize_data, fn_kwargs={'tokenizer': tokenizer, 'max_length': max_length})
@@ -27,9 +27,13 @@ def process_data(train_data, test_data, tokenizer):
     min_freq = 5
     special_tokens = ['<unk>', '<pad>']
 
-    vocab = torchtext.vocab.build_vocab_from_iterator(train_data['tokens'],
-                                                    min_freq=min_freq,
-                                                    specials=special_tokens)
+    if vocab_file is None:
+      vocab = torchtext.vocab.build_vocab_from_iterator(train_data['tokens'],
+                                                      min_freq=min_freq,
+                                                      specials=special_tokens)
+    else:
+      print("Loading Vocab from .pth file")
+      vocab = torch.load(vocab_file)
 
     unk_index = vocab['<unk>']
 
@@ -46,10 +50,10 @@ def process_data(train_data, test_data, tokenizer):
     return train_data, valid_data, test_data, vocab
 
 
-def get_data_loaders(batch_size=512):
+def get_data_loaders(batch_size=512, vocab_file=None):
     train_data, test_data = get_data()
     tokenizer = get_tokenizer()
-    train_data, valid_data, test_data, vocab = process_data(train_data, test_data, tokenizer)
+    train_data, valid_data, test_data, vocab = process_data(train_data, test_data, tokenizer, vocab_file=vocab_file)
 
     pad_index = vocab['<pad>']
 
