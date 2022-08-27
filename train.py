@@ -27,6 +27,10 @@ print(f'The model has {count_parameters(model):,} trainable parameters')
 
 model.apply(initialize_weights)
 
+# Saving Vocabulary is important because the process isn't deterministic
+torch.save(vocab, "lstm_vocab.pth")
+
+
 vectors = torchtext.vocab.FastText()
 pretrained_embedding = vectors.get_vecs_by_tokens(vocab.get_itos())
 model.embeddings.weight.data = pretrained_embedding
@@ -66,7 +70,10 @@ for epoch in range(n_epochs):
     
     if epoch_valid_loss < best_valid_loss:
         best_valid_loss = epoch_valid_loss
-        torch.save(model.state_dict(), 'lstm.pt')
+        with torch.no_grad():
+            torch.save(model, 'lstm.pth')
+            scripted_model = torch.jit.script(model)
+            scripted_model.save('lstm_scripted.pt')
     
     print(f'epoch: {epoch+1}')
     print(f'train_loss: {epoch_train_loss:.3f}, train_acc: {epoch_train_acc:.3f}')
